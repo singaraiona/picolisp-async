@@ -1,11 +1,14 @@
 
-(load "epoll.l")
-(load "async.l")
+(load "async/epoll.l")
+(load "async/async.l")
 
-(de async-handle (E)
-   (msg (assoc E *Hdls)) )
+(de http (S)
+   (in S
+      (while (line T)
+         (msg @) )
+      (async-stop S) ) )
 
 (de main ()
    (async-new-pool)
-   (async-spawn (async-new-listener 8080 'async-handle))
+   (async-new-listener 8080 http)
    (async-run) )

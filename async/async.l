@@ -3,16 +3,16 @@
 (setq *ASYNC_MAX_EVENTS 10000)
 
 (de async-handle (E)
-   (msg (assoc E *Hdls)) )
-   #(let S (accept (cadr E))
-   #   (msg S)
-   #   (epoll-push S)
-   #   (out S (prin "Ok"))
-   #   (close S) ) )
+   (let? U (assoc E *Hdls)
+      ((cdr U) (car U)) ) )
 
 (de async-spawn (E F)
    (queue '*Hdls (cons E F))
    (epoll-push E) )
+
+(de async-stop (E)
+   (del (assoc E *Hdls) '*Hdls)
+   (epoll-pop E) )
 
 (de async-new-pool ()
    (epoll-new *ASYNC_MAX_EVENTS) )
@@ -23,6 +23,13 @@
          (let E (epoll-get-event N)
             (async-handle E) ) ) ) )
 
-(de async-new-listener (P F)
-   (async-spawn (port P) F) )
+(de async-new-listener "Args"
+   (let (P (pop '"Args")
+         F (pop '"Args") )
+      (async-spawn
+            (port P)
+            (list '(E)
+               (list 'let 'S '(accept E)
+                  (list 'async-spawn 'S F) ]
+
 

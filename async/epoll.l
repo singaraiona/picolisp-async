@@ -39,7 +39,9 @@
       (epoll-ctl *EpollFd *EPOLL_CTL_ADD E Evt) ) )
 
 (de epoll-pop (E)
-   (epoll-ctl *EpollFd *EPOLL_CTL_DEL E NIL) )
+   (epoll-ctl *EpollFd *EPOLL_CTL_DEL E NIL)
+   (del E '*Alloc) )
+   #(native "@" "free" NIL E) )
 
 (de epoll-new (S)
    (setq *EpollSize S)
