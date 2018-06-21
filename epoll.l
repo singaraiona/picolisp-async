@@ -11,6 +11,9 @@
 (setq *EPOLLONESHOT (>> -30 1))
 (setq *EPOLLET (>> -31 1))
 
+(de std-fcntl (Fd Cmd Arg)
+   (native "@" "fcntl" Fd Cmd Arg) )
+
 (de epoll-create (Flags)
    (native "@" "epoll_create" 'I Flags) )
 
@@ -22,6 +25,8 @@
 
 (de epoll-event (E)
    (let Evt (native "@" "malloc" 'N *SIZE_OF_EVENT)
+      (let F (std-fcntl E *F_GETFL 0)
+         (std-fcntl E *F_SETFL (| F *O_NONBLOCK)) )
       (struct Evt 'N (cons (| *EPOLLIN *EPOLLET) 4) (cons E 8))
       (queue '*Alloc Evt)
       Evt ) )
@@ -37,6 +42,7 @@
    (epoll-ctl *EpollFd *EPOLL_CTL_DEL E NIL) )
 
 (de epoll-new (S)
+   (setq *EpollSize S)
    (setq *EpollFd (epoll-create S))
    (setq *Evts (epoll-events-buf S))
    (queue '*Alloc *Evts) )
@@ -46,7 +52,9 @@
       '((R) (native "@" "free" NIL R))
       *Alloc ) )
 
-(de epoll-run (S F)
-   (for E (epoll-wait *EpollFd *Evts S 0)
-      (let Ev (struct *Evts '(I N))
-         (F Ev) ) ) )
+(de epoll-run (U)
+   (epoll-wait *EpollFd *Evts *EpollSize (or U 0)) )
+
+(de epoll-get-event (I)
+   (let Evts (+ *Evts (* (dec I) *SIZE_OF_EVENT))
+      (cadr (struct Evts '(I N))) ) )

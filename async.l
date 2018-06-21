@@ -1,18 +1,28 @@
 # A runtime for writing reliable, asynchronous, and slim applications
 # ---
-(load "epoll.l")
-
 (setq *ASYNC_MAX_EVENTS 10000)
 
-(de async-clb (E)
-   (msg (text "FD: @1 E: @2" (car E) (cadr E))) )
+(de async-handle (E)
+   (msg (assoc E *Hdls)) )
+   #(let S (accept (cadr E))
+   #   (msg S)
+   #   (epoll-push S)
+   #   (out S (prin "Ok"))
+   #   (close S) ) )
 
-(de async-listen (Port)
-   (setq *Sock (port Port))
-   (epoll-new *ASYNC_MAX_EVENTS)
-   (epoll-push *Sock)
+(de async-spawn (E F)
+   (queue '*Hdls (cons E F))
+   (epoll-push E) )
+
+(de async-new-pool ()
+   (epoll-new *ASYNC_MAX_EVENTS) )
+
+(de async-run ()
    (loop
-      (epoll-run *ASYNC_MAX_EVENTS 'async-clb) ) )
+      (for N (epoll-run)
+         (let E (epoll-get-event N)
+            (async-handle E) ) ) ) )
 
-(async-listen 8080)
-(epoll-free)
+(de async-new-listener (P F)
+   (async-spawn (port P) F) )
+
