@@ -6,7 +6,10 @@
    (in S
       (while (line T)
          (msg @) )
-      (async-stop S) ) )
+      (while (line T)
+         (msg @) )
+
+          ) )
 
 (de main ()
    (async-new-pool)

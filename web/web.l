@@ -5,9 +5,6 @@
 # *StatusPrefix should be HTTP/version for an HTTP server response
 (default *StatusPrefix "Status: ")
 
-#(redef ht:Pack (Lst)
-#   (ht:Pack (replace Lst "+" " ")) )
-
 (de urlDecode (X)
    (setq X (split X "="))
    (cons (ht:Pack (car X)) (ht:Pack (cadr X))) )
@@ -114,7 +111,6 @@
                   (out "/dev/null" (echo (pack "^M^J" *MPartLim))) )
                (setq L (if (= "-" (car (line))) *MPartEnd *MPartLim)) ) ) ) ) )
 
-
 (de get-form (Name)
    (default *Form (get-form-data))
    (cdr (assoc Name *Form)) )
@@ -195,7 +191,6 @@
          (res (or (cadr Typ) "application/octet-stream")
             (in File (echo)) ) ) ) )
 
-
 # Default request handling system
 
 # (dh lst . prg) -> handler
@@ -215,7 +210,6 @@
 
 # By default we have an unconditonal handler with a 404 error
 (default *Handlers '((T (http404)) ) )
-
 
 (de req-handler ()
    # Adapt/decode variables

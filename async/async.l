@@ -6,13 +6,18 @@
    (let? U (assoc E *Hdls)
       ((cdr U) (car U)) ) )
 
-(de async-spawn (E F)
+(de async-spawn (E F L)
+   (queue '*Hdls (cons E F))
+   (epoll-push E L) )
+
+(de async-listener (E F)
    (queue '*Hdls (cons E F))
    (epoll-push E) )
 
 (de async-stop (E)
    (del (assoc E *Hdls) '*Hdls)
-   (epoll-pop E) )
+   (epoll-pop E)
+   (close E) )
 
 (de async-new-pool ()
    (epoll-new *ASYNC_MAX_EVENTS) )
@@ -30,6 +35,7 @@
             (port P)
             (list '(E)
                (list 'let 'S '(accept E)
-                  (list 'async-spawn 'S F) ]
+                  (list 'async-spawn 'S F) ) )
+            T ) ) )
 
 

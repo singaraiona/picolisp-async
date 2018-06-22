@@ -8,6 +8,9 @@
 (setq *F_SETFL 4)
 (setq *SIZE_OF_EVENT 12)
 (setq *EPOLLIN 1)
+(setq *EPOLLOUT 4)
+(setq *EPOLLERR 8)
+(setq *EPOLLHUP 16)
 (setq *EPOLLONESHOT (>> -30 1))
 (setq *EPOLLET (>> -31 1))
 
@@ -23,25 +26,28 @@
 (de epoll-wait (EpFd Evts MaxEvts Timeout)
    (native "@" "epoll_wait" 'I EpFd Evts MaxEvts Timeout) )
 
-(de epoll-event (E)
+(de epoll-event (E L)
    (let Evt (native "@" "malloc" 'N *SIZE_OF_EVENT)
-      (let F (std-fcntl E *F_GETFL 0)
-         (std-fcntl E *F_SETFL (| F *O_NONBLOCK)) )
-      (struct Evt 'N (cons (| *EPOLLIN *EPOLLET) 4) (cons E 8))
+      (if L
+         (struct Evt 'N (cons *EPOLLIN 4) (cons E 8))
+         (prog
+            (std-fcntl E *F_SETFL (| (std-fcntl E *F_GETFL 0) *O_NONBLOCK))
+            (msg (std-fcntl E *F_GETFL 0))
+            (struct Evt 'N (cons (| *EPOLLIN  *EPOLLET
+                                    *EPOLLHUP *EPOLLERR ) 4) (cons E 8) ) ) )
       (queue '*Alloc Evt)
       Evt ) )
 
 (de epoll-events-buf (S)
    (native "@" "malloc" 'N (* S *SIZE_OF_EVENT)) )
 
-(de epoll-push (E)
-   (let Evt (epoll-event E)
+(de epoll-push (E L)
+   (let Evt (epoll-event E L)
       (epoll-ctl *EpollFd *EPOLL_CTL_ADD E Evt) ) )
 
 (de epoll-pop (E)
-   (epoll-ctl *EpollFd *EPOLL_CTL_DEL E NIL)
+   (epoll-ctl *EpollFd *EPOLL_CTL_DEL E)
    (del E '*Alloc) )
-   #(native "@" "free" NIL E) )
 
 (de epoll-new (S)
    (setq *EpollSize S)
