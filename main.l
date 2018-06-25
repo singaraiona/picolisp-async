@@ -1,17 +1,8 @@
 
 (load "async/epoll.l")
 (load "async/async.l")
-
-(de http (S)
-   (in S
-      (while (line T)
-         (msg @) )
-      (msg "DATA")
-      (while (line T)
-         (msg @) ) )
-
-   (out S (prinl "OK"))
-   (async-stop S) )
+(load "web/web.l")
+(load "web/httpd.l")
 
 (de main ()
    (async-new-pool)
