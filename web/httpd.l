@@ -1,29 +1,12 @@
 # HTTP server for Web.l
 # (c) 2012 Jose I. Romero
 
-(de server1 (P)
-   (setq P (port P))
-   (gc)
-   (loop
-      (setq *Sock (listen P))
-      (NIL (fork) (close P))
-      (close *Sock) )
-   (task *Sock (http @))
-   (http *Sock)
-   (bye) )
+(setq *StatusPrefix "HTTP/1.0 ")
 
 (de server (P)
-   (task (port P)
-      (setq Args @)
-      (gc)
-      (let? *Sock (accept Args)
-         (unless (fork)
-            (task *Sock (http Args))
-            (http *Sock)
-            (bye) )
-         (close *Sock) ) ) )
-
-(setq *StatusPrefix "HTTP/1.0 ")
+   (async-new-pool)
+   (async-new-listener P http)
+   (async-run) )
 
 (de http (S)
    (use (@M @U @H L @K @V)

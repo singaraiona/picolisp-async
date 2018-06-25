@@ -29,7 +29,7 @@
             (async-handle E) ) ) ) )
 
 (de async-new-listener "Args"
-   (let (P (pop '"Args")
+   (let (P (eval (pop '"Args"))
          F (pop '"Args") )
       (async-spawn
             (port P)

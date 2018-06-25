@@ -4,7 +4,8 @@
 (load "web/web.l")
 (load "web/httpd.l")
 
+(dh ("/")
+  (res "application/json" (prinl "{\"a\": 12}")) )
+
 (de main ()
-   (async-new-pool)
-   (async-new-listener 8080 http)
-   (async-run) )
+  (server (or (format (sys "PORT")) 8080)) )
