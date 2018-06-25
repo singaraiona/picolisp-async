@@ -46,5 +46,5 @@
             (setq *RemoteAddr *Adr)
             (setq *StatusPrefix (pack "HTTP/1." *Http1 " "))
             (if (n0 *Http1) (on *Chunked))
-            (out S (req-handler)) ) ) )
+            (out S (proc-request)) ) ) )
    (and S (=0 *Http1) (task (close S))) )

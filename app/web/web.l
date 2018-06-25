@@ -190,33 +190,3 @@
          (max-age (or (caddr Typ) 600))
          (res (or (cadr Typ) "application/octet-stream")
             (in File (echo)) ) ) ) )
-
-# Default request handling system
-
-# (dh lst . prg) -> handler
-# Define an url handler
-# The first argument is an url pattern to match, the second is a prg
-# body to run when the request url matches the pattern. For proper
-# operation, define the patterns from the most general to the most
-# particular.
-(de dh X
-   (push '*Handlers
-      (cons
-         (list 'match
-            (cons 'quote
-               (mapcan '[(S) (if (pat? S) (cons @) (chop S))] (car X)) )
-            '*PathInfo )
-         (cdr X) ) ) )
-
-# By default we have an unconditonal handler with a 404 error
-(default *Handlers '((T (http404)) ) )
-
-(de req-handler ()
-   # Adapt/decode variables
-   (or (= "/" (car *PathInfo)) (push '*PathInfo "/"))
-   (off "*Headers" "*Cookies")
-   (cond
-      ((member (pack (cadr (split *PathInfo "/"))) *AllowDir)
-         (send-file (pack (pwd) "/" *PathInfo)) )
-      (T (eval (cons 'cond *Handlers))) ) )
-
