@@ -24,9 +24,12 @@
 
 (de proc-put ()
    (let (Doc (parseJson (caar (get-form-data)))
-         Obj (obj ((+Document) _id (genKey '_id '+Document))) )
-
-         (res "text/json" (printJson Obj)) ) )
+         Obj (new-obj ((+Document) _id (genKey '_id '+Document))) )
+      (mapc
+         '((X)
+            (put Obj (car (str (car X))) (cdr X)) )
+         Doc )
+      (res "text/json" (printJson Obj)) ) )
 
 (de proc-delete ()
    (httpStat 403 "Not implemented yet.") )
