@@ -15,7 +15,7 @@
                (let R (| (% (rand) 16) 0)
                   (link
                      (cond
-                        ((= "x" C) (hex R))
-                        ((= "y" C) (hex (| (& R 3) 8)))
+                        ((= "x" C) (lowc (hex R)))
+                        ((= "y" C) (lowc (hex (| (& R 3) 8))))
                         (T C) ) ) ) )
             *UUIDSTR ) ) ) )
