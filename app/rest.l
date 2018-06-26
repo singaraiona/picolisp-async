@@ -4,6 +4,12 @@
    (ifn (member F *RestAllowed) (throw 'rest (httpStat 403 "Not allowed.")))
    (F A) )
 
+(de proc-reply (R)
+   (res "text/json"
+      (prog
+         (printJson R)
+         (prinl) ) ) )
+
 (de proc-get ()
    (if
       (catch 'rest
@@ -13,23 +19,39 @@
                NIL )
             (cdr (split *PathInfo "/")) ) )
       (apply res @)
-      (res "text/json"
-         (printJson
-            (ifn (pair (car *LastRes))
-               (list *LastRes)
-               *LastRes ) ) ) ) )
+      (proc-reply
+         (ifn (pair (car *LastRes))
+            (list *LastRes)
+            *LastRes ) ) ) )
 
 (de proc-post ()
    (httpStat 403 "Not implemented yet.") )
 
-(de proc-put ()
-   (let (Doc (parseJson (caar (get-form-data)))
-         Obj (new-obj ((+Document) _id (genKey '_id '+Document))) )
+(de _prop (P)
+   (cond
+      ((atom P) P)
+      ((=T (car P))
+         (make
+            (mapc
+               '((X) (link (_prop X)))
+               (cdr P) ) ) )
+      (T (_doc P)) ) )
+
+(de _doc (Doc)
+   (let Obj (new-obj ((+Document)
+      _id (or (cdr (assoc '_id Doc))
+         (uuidv4) ) ) )
       (mapc
          '((X)
-            (put Obj (car (str (car X))) (cdr X)) )
+            (put Obj (car (str (car X))) (_prop (cdr X))) )
          Doc )
-      (res "text/json" (printJson Obj)) ) )
+      Obj ) )
+
+(de proc-put ()
+   (let (Doc (parseJson (caar (get-form-data)) T)
+         Obj (_doc Doc) )
+      (commit)
+      (proc-reply (sho> Obj)) ) )
 
 (de proc-delete ()
    (httpStat 403 "Not implemented yet.") )

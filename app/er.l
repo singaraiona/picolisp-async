@@ -1,6 +1,11 @@
 
 (class +Document +Entity)
-(rel _id (+Key +Number))
+(rel _id (+Sn +IdxFold +String))
+
+(dm sho> (A)
+   (ifn A
+      (list (cons '_id (: _id)))
+      (msg (getl This)) ) )
 
 ### Same as (obj) but evaluates fields
 (de new-obj Lst
