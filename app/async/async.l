@@ -32,10 +32,24 @@
    (let (P (eval (pop '"Args"))
          F (pop '"Args") )
       (async-spawn
-            (port P)
-            (list '(E)
-               (list 'let 'S '(accept E)
-                  (list 'async-spawn 'S F) ) )
-            T ) ) )
+         (port P)
+         (list '(E)
+            (list 'let 'S '(accept E)
+               (list 'async-spawn 'S F) ) )
+         T ) ) )
 
+(de async-ps1 ()
+   (prin "[chaser]: ")
+   (flush) )
 
+(de async-new-console ()
+   (async-ps1)
+   (async-spawn
+      0
+      'async-repl ) )
+
+(de async-repl (S)
+   (let? E
+      (in S (eval (car (str (line T)))))
+      (println '-> E) )
+   (async-ps1) )

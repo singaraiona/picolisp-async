@@ -1,8 +1,9 @@
 (de *Prompt "[chaser]")
 
 (load "@lib/adm.l" "@lib/math.l" "@lib/too.l" "@lib/json.l")
-(load "app/async/epoll.l" "app/async/async.l" "app/web/web.l"
-      "app/web/httpd.l" "app/rest.l" "app/chaser.l" )
+(load "app/er.l" "app/async/epoll.l" "app/async/async.l"
+      "app/web/web.l" "app/web/httpd.l" "app/rest.l"
+      "app/chaser.l" )
 
 (setq
    *Pool "db/app/"
@@ -21,4 +22,4 @@
   (call "mkdir" "-p" "db/app/" *Blob)
   (pool *DBFILE)
   (load "app/init.l")
-  (server (or (format (sys "PORT")) 8080)) )
+  (server (or (format (sys "PORT")) 8080) T) )

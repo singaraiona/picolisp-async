@@ -3,9 +3,10 @@
 
 (setq *StatusPrefix "HTTP/1.0 ")
 
-(de server (P)
+(de server (P C)
    (async-new-pool)
    (async-new-listener P http)
+   (if C (async-new-console))
    (async-run) )
 
 (de http (S)
