@@ -1,9 +1,10 @@
 
-(seed "!#$QWERT*(&^GF")
 (setq *UUIDSTR (chop "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx"))
 
 (de ts ()
    (+ (* 86400 (- (date) (date 1970 1 1))) (time)) )
+
+(seed (ts))
 
 ### UUID RFC4122
 (de uuidv4 ()
