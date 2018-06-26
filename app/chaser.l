@@ -1,5 +1,9 @@
 
 (setq *RestAllowed '(states))
 
-(de states ()
-  '("a" . 12) )
+(de states (Args)
+   (make
+      (link T)
+      (mapc
+         '((X) (link (sho> X)))
+         (collect '_id '+Document) ) ) )

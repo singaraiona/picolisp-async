@@ -1,8 +1,14 @@
 
-(de proc-fn (F A)
-   (ifn (getd F) (throw 'rest (http404)))
-   (ifn (member F *RestAllowed) (throw 'rest (httpStat 403 "Not allowed.")))
-   (F A) )
+(de proc-item (F A)
+   (if
+      (setq Exe (getd (car (str F))))
+      (prog
+         (ifn (member F *RestAllowed) (throw 'rest (httpStat 403 "Not allowed.")))
+         (Exe A) )
+      (if
+         (getDocument F)
+         (sho> @)
+         (throw 'rest (http404)) ) ) )
 
 (de proc-reply (R)
    (res "text/json"
@@ -15,14 +21,11 @@
       (catch 'rest
          (mapc
             '((X)
-               (setq *LastRes (proc-fn (car (str (pack X))) *LastRes))
+               (setq *LastRes (proc-item (pack X) *LastRes))
                NIL )
             (cdr (split *PathInfo "/")) ) )
       (apply res @)
-      (proc-reply
-         (ifn (pair (car *LastRes))
-            (list *LastRes)
-            *LastRes ) ) ) )
+      (proc-reply *LastRes) ) )
 
 (de proc-post ()
    (httpStat 403 "Not implemented yet.") )

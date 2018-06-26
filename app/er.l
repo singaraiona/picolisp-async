@@ -19,3 +19,12 @@
       (while Lst
          (put> Obj (pop 'Lst) (eval (pop 'Lst))) )
    Obj ) )
+
+(de getDocument (Id)
+   (pilog
+      (quote
+         @Id Id
+         (select (@@)
+            ((_id +Document @Id))
+               (same @Id @@ _id) ) )
+      @@ ) )
