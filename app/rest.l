@@ -1,4 +1,10 @@
 
+(de bad "Args"
+  (throw 'rest (eval (pop '"Args"))) )
+
+(de ok "Args"
+   (res "text/json" (eval (pop '"Args"))) )
+
 (de query-arg (P E)
    (if E
       (= E (get-query P))
@@ -8,20 +14,21 @@
    (if
       (setq Exe (getd (car (str F))))
       (prog
-         (ifn (member F *RestAllowed) (throw 'rest (httpStat 403 "Not allowed.")))
+         (ifn (member F *RestAllowed) (bad (httpStat 403 "Not allowed.")))
          (Exe A) )
       (or
          (getDocument F)
          (throw 'rest (http404)) ) ) )
 
 (de proc-reply (R)
-   (setq Flds (query-arg "include_fields" "true"))
-   (setq Inc (query-arg "include_doc" "true"))
-   (res "text/json"
+   (use @Flds @Inc)
+   (setq @Flds (query-arg "include_fields" "true"))
+   (setq @Inc (query-arg "include_doc" "true"))
+   (ok
       (if
          (atom R)
          (prog
-            (printJson (sho> R Flds Inc))
+            (printJson (sho> R @Flds @Inc))
             (prinl) )
          (prog
             (prin "[")
@@ -29,21 +36,18 @@
             (mapc
                '((X)
                   (prin ",")
-                  (printJson (sho> X Flds Inc)))
+                  (printJson (sho> X @Flds @Inc)))
                (cdr R) )
             (prinl "]") ) ) )
 
 (de proc-db (Url)
-   (if
-      (catch 'rest
-         (mapc
-            '((X)
-               (and X
-                  (setq *LastRes (proc-item (pack X) *LastRes)) )
-               NIL )
-            Url ) )
-      (apply res @)
-      (proc-reply *LastRes) ) )
+   (mapc
+      '((X)
+         (and X
+            (setq *LastRes (proc-item (pack X) *LastRes)) )
+         NIL )
+      Url )
+   *LastRes )
 
 (de proc-url (Url)
    (send-file
@@ -57,13 +61,13 @@
          (T (proc-url U)) ) ) )
 
 (de proc-post ()
-   (httpStat 403 "Not implemented yet.") )
+   (bad (httpStat 403 "Not implemented yet.")) )
 
 (de proc-put ()
    (let (Doc (parseJson (caar (get-form-data)) T)
          Obj (_doc Doc) )
-      (commit)
-      (proc-reply (sho> Obj)) ) )
+         (commit)
+         Obj ) )
 
 (de _prop (P)
    (cond
@@ -86,12 +90,16 @@
       Obj ) )
 
 (de proc-delete ()
-   (httpStat 403 "Not implemented yet.") )
+   (bad (httpStat 403 "Not implemented yet.")) )
 
 (de proc-request ()
-   (case *ReqMethod
-      ("GET" (proc-get))
-      ("POST" (proc-post))
-      ("PUT" (proc-put))
-      ("DELETE" (proc-delete))
-      (T (httpStat 403 "Invalid request method.")) ) )
+   (catch 'rest
+      (let? R
+         (case *ReqMethod
+            ("GET" (proc-get))
+            ("POST" (proc-post))
+            ("PUT" (proc-put))
+            ("DELETE" (proc-delete))
+            (T (bad (httpStat 403 "Invalid request method."))) )
+      (proc-reply R) ) )
+   (apply res @) )
