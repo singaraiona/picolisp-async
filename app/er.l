@@ -2,10 +2,20 @@
 (class +Document +Entity)
 (rel _id (+Sn +IdxFold +String))
 
-(dm sho> (A)
-   (ifn A
-      (list (cons '_id (: _id)))
-      (msg (getl This)) ) )
+(dm sho> (Flds Inc)
+   (ifn Flds
+      (list (cons '_id  (: _id)))
+      (make
+         (mapc
+            '((X)
+               (link
+                  (cons
+                     (cdr X)
+                     (if
+                        (ext? (car X))
+                        (sho> (car X) Inc Inc)
+                        (car X) ) ) ) )
+            (getl This) ) ) ) )
 
 ### Same as (obj) but evaluates fields
 (de new-obj Lst

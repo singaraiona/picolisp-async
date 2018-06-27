@@ -61,7 +61,7 @@
       (T (push '"*Cookies" (cons N (rest)))) ) )
 
 (de get-query (Name)
-   (default *Query (mapcar urlDecode (split *QueryString "&" ";")))
+   (setq *Query (mapcar urlDecode (split *QueryString "&" ";")))
    (cdr (assoc Name *Query)) )
 
 (de get-form-data ()

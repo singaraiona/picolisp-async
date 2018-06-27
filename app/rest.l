@@ -1,4 +1,9 @@
 
+(de query-arg (P E)
+   (if E
+      (= E (get-query P))
+      (get-query P) ) )
+
 (de proc-item (F A)
    (if
       (setq Exe (getd (car (str F))))
@@ -10,11 +15,13 @@
          (throw 'rest (http404)) ) ) )
 
 (de proc-reply (R)
+   (setq Flds (query-arg "include_fields" "true"))
+   (setq Inc (query-arg "include_doc" "true"))
    (res "text/json"
       (if
          (atom R)
          (prog
-            (printJson (sho> R))
+            (printJson (sho> R Flds Inc))
             (prinl) )
          (prog
             (prin "[")
@@ -22,7 +29,7 @@
             (mapc
                '((X)
                   (prin ",")
-                  (printJson (sho> X)))
+                  (printJson (sho> X Flds Inc)))
                (cdr R) )
             (prinl "]") ) ) )
 
@@ -39,7 +46,8 @@
       (proc-reply *LastRes) ) )
 
 (de proc-url (Url)
-   (http404) )
+   (send-file
+      (pack "static/" (or (pack Url) "index.html")) ) )
 
 (de proc-get ()
    (let U (cdr (split *PathInfo "/"))
@@ -50,6 +58,12 @@
 
 (de proc-post ()
    (httpStat 403 "Not implemented yet.") )
+
+(de proc-put ()
+   (let (Doc (parseJson (caar (get-form-data)) T)
+         Obj (_doc Doc) )
+      (commit)
+      (proc-reply (sho> Obj)) ) )
 
 (de _prop (P)
    (cond
@@ -70,12 +84,6 @@
             (put Obj (car (str (car X))) (_prop (cdr X))) )
          Doc )
       Obj ) )
-
-(de proc-put ()
-   (let (Doc (parseJson (caar (get-form-data)) T)
-         Obj (_doc Doc) )
-      (commit)
-      (proc-reply (sho> Obj)) ) )
 
 (de proc-delete ()
    (httpStat 403 "Not implemented yet.") )
