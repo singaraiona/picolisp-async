@@ -1,9 +1,17 @@
 
-(de bad "Args"
+(de rest-bad "Args"
   (throw 'rest (eval (pop '"Args"))) )
 
-(de ok "Args"
+(de rest-ok "Args"
    (res "text/json" (eval (pop '"Args"))) )
+
+(de rest-err (E R)
+   (res "text/json"
+      (printJson
+         (list
+            (cons "error:" E)
+            (cons "desc:" R) ) )
+      (prinl) ) )
 
 (de query-arg (P E)
    (if E
@@ -14,7 +22,7 @@
    (if
       (setq Exe (getd (car (str F))))
       (prog
-         (ifn (member F *RestAllowed) (bad (httpStat 403 "Not allowed.")))
+         (ifn (member F *RestAllowed) (rest-bad (httpStat 403 "Not allowed.")))
          (Exe A) )
       (or
          (getDocument F)
@@ -24,7 +32,7 @@
    (use @Flds @Inc)
    (setq @Flds (query-arg "include_fields" "true"))
    (setq @Inc (query-arg "include_doc" "true"))
-   (ok
+   (rest-ok
       (if
          (atom R)
          (prog
@@ -41,13 +49,14 @@
             (prinl "]") ) ) )
 
 (de proc-db (Url)
+   (use @LastRes)
    (mapc
       '((X)
          (and X
-            (setq *LastRes (proc-item (pack X) *LastRes)) )
+            (setq @LastRes (proc-item (pack X) @LastRes)) )
          NIL )
       Url )
-   *LastRes )
+   @LastRes )
 
 (de proc-url (Url)
    (send-file
@@ -61,13 +70,14 @@
          (T (proc-url U)) ) ) )
 
 (de proc-post ()
-   (bad (httpStat 403 "Not implemented yet.")) )
+   (rest-bad (httpStat 403 "Not implemented yet.")) )
 
 (de proc-put ()
    (let (Doc (parseJson (caar (get-form-data)) T)
          Obj (_doc Doc) )
-         (commit)
-         Obj ) )
+      (and *CheckUpdate (*CheckUpdate Obj))
+      (commit)
+      Obj ) )
 
 (de _prop (P)
    (cond
@@ -90,7 +100,7 @@
       Obj ) )
 
 (de proc-delete ()
-   (bad (httpStat 403 "Not implemented yet.")) )
+   (rest-bad (httpStat 403 "Not implemented yet.")) )
 
 (de proc-request ()
    (catch 'rest
@@ -100,6 +110,7 @@
             ("POST" (proc-post))
             ("PUT" (proc-put))
             ("DELETE" (proc-delete))
-            (T (bad (httpStat 403 "Invalid request method."))) )
+            (T (rest-bad (httpStat 403 "Invalid request method."))) )
       (proc-reply R) ) )
+   (rollback)
    (apply res @) )
