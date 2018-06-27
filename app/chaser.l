@@ -1,9 +1,7 @@
 
-(setq *RestAllowed '(states))
+(setq *RestAllowed '(states first last))
+
+(de first (L) (car L))
 
 (de states (Args)
-   (make
-      (link T)
-      (mapc
-         '((X) (link (sho> X)))
-         (collect '_id '+Document) ) ) )
+   (collect '_id '+Document) )

@@ -5,16 +5,26 @@
       (prog
          (ifn (member F *RestAllowed) (throw 'rest (httpStat 403 "Not allowed.")))
          (Exe A) )
-      (if
+      (or
          (getDocument F)
-         (sho> @)
          (throw 'rest (http404)) ) ) )
 
 (de proc-reply (R)
    (res "text/json"
-      (prog
-         (printJson R)
-         (prinl) ) ) )
+      (if
+         (atom R)
+         (prog
+            (printJson (sho> R))
+            (prinl) )
+         (prog
+            (prin "[")
+            (printJson (sho> (car R))))
+            (mapc
+               '((X)
+                  (prin ",")
+                  (printJson (sho> X)))
+               (cdr R) )
+            (prinl "]") ) ) )
 
 (de proc-get ()
    (if
