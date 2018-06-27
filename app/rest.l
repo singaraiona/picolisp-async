@@ -40,7 +40,7 @@
             (prinl) )
          (prog
             (prin "[")
-            (printJson (sho> (car R))))
+            (printJson (sho> (car R) @Flds @Inc)))
             (mapc
                '((X)
                   (prin ",")
