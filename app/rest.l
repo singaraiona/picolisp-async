@@ -26,16 +26,27 @@
                (cdr R) )
             (prinl "]") ) ) )
 
-(de proc-get ()
+(de proc-db (Url)
    (if
       (catch 'rest
          (mapc
             '((X)
-               (setq *LastRes (proc-item (pack X) *LastRes))
+               (and X
+                  (setq *LastRes (proc-item (pack X) *LastRes)) )
                NIL )
-            (cdr (split *PathInfo "/")) ) )
+            Url ) )
       (apply res @)
       (proc-reply *LastRes) ) )
+
+(de proc-url (Url)
+   (http404) )
+
+(de proc-get ()
+   (let U (cdr (split *PathInfo "/"))
+      (case
+         (pack (car U))
+         ("db" (proc-db (cdr U)))
+         (T (proc-url U)) ) ) )
 
 (de proc-post ()
    (httpStat 403 "Not implemented yet.") )
